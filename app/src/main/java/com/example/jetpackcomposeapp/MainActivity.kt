@@ -6,9 +6,9 @@ import android.os.Message
 import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +19,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             JetpackComposeAppTheme {
-                Conversation(SampleData.conversationSample)
+                if (isSystemInDarkTheme()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                    ) {
+                        Conversation(SampleData.conversationSample)
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)
+                    ) {
+                        Conversation(SampleData.conversationSample)
+                    }
+                }
             }
         }
     }
@@ -53,7 +70,23 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun PreviewConversation() {
         JetpackComposeAppTheme {
-            Conversation(SampleData.conversationSample)
+            if (isSystemInDarkTheme()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                ) {
+                    Conversation(SampleData.conversationSample)
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                ) {
+                    Conversation(SampleData.conversationSample)
+                }
+            }
         }
     }
 
@@ -75,6 +108,11 @@ class MainActivity : ComponentActivity() {
             // We keep track if the message is expanded or not in this variable
             var isExpanded by remember { mutableStateOf(false) }
 
+            // use this to animate the color change when a message is expanded
+            val surfaceColor by animateColorAsState(
+                if (isExpanded) MaterialTheme.colors.primary else MaterialTheme.colors.surface,
+            )
+
             // We toggle the isExpanded variable when we click on this Column
             Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
                 Text(
@@ -86,7 +124,14 @@ class MainActivity : ComponentActivity() {
 
                 Surface(
                     shape = MaterialTheme.shapes.medium,
-                    elevation = 1.dp) {
+                    elevation = 1.dp,
+                    // surfaceColor color will be changing gradually from primary to surface
+                    color = surfaceColor,
+                    // animateContentSize will change the Surface size gradually
+                    modifier = Modifier
+                        .animateContentSize()
+                        .padding(1.dp)
+                ) {
                     Text(
                         text = msg.body,
                         modifier = Modifier.padding(all = 4.dp),
